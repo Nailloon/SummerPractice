@@ -33,7 +33,17 @@ class _HomeState extends State<HomePage>{
   Future<void> loadInfoFromJson() async {
     String data = await rootBundle.loadString("assets/bootcamp.json");
     List<dynamic> list = jsonDecode(data)['data'] as List<dynamic>;
-    setState(() => contacts = list.map((e) => Contact.fromJson(e)).toList());
+    setState(() => contacts = list.map((e) => Contact.fromJson(e)).toList()
+        ..sort((a, b) {
+          if (a.dateTime == null && b.dateTime == null) {
+            return 0;
+          } else if (a.dateTime == null) {
+            return 1;
+          } else if (b.dateTime == null) {
+            return -1;
+          }
+          return b.dateTime!.compareTo(a.dateTime!);
+        }));
   }
 
   @override
@@ -55,11 +65,25 @@ class _HomeState extends State<HomePage>{
         ],
       ),
       
-      body: ListView(
-          children: [
-            if (contacts.isNotEmpty)
-              ContactChatElement(contacts[17]),
-          ]
+      body: ListView.builder(
+      itemCount: contacts.length,
+      itemBuilder: (BuildContext context, int index) {
+        Contact contact = contacts[index];
+        if (contact.lastMessage == null) {
+          return Container();
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Colors.grey,
+              width: 1.0,
+            ),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: ContactChatElement(contact),
+        );
+        }
     ));
   }
 }
